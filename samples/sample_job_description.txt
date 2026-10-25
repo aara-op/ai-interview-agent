@@ -1,0 +1,34 @@
+Software Engineer — Backend (Java / Spring Boot)
+Location: Bengaluru / Hybrid · Experience: 2–4 years · Full time
+
+About the role
+We are hiring a backend engineer to build and operate the services that power
+our payments platform. You will own microservices end to end: design, implement,
+test, deploy and monitor them in production.
+
+Responsibilities
+- Design and implement REST and event-driven microservices in Java 17+ and Spring Boot.
+- Model data in PostgreSQL and write efficient, well-tuned queries.
+- Build resilient integrations with Kafka, Redis and third-party payment gateways.
+- Improve latency, throughput and observability of existing services.
+- Participate in code reviews, incident response and capacity planning.
+- Work with product and frontend engineers to deliver features incrementally.
+
+Required skills
+- Java, Spring Boot, Spring Security
+- REST API design and microservices architecture
+- SQL / PostgreSQL, at least one message broker (Kafka or RabbitMQ)
+- Git, unit and integration testing (JUnit, Mockito)
+- Docker and a CI/CD pipeline
+
+Nice to have
+- Kubernetes, AWS (ECS/Lambda), Redis
+- Event sourcing or CQRS exposure
+- Experience with PCI-DSS or other regulated environments
+
+What we evaluate in interviews
+- Depth of Java and Spring Boot knowledge (collections, concurrency, dependency injection)
+- Microservice design: boundaries, failure modes, idempotency, retries
+- Practical experience from past projects
+- Debugging and problem-solving approach
+- Communication clarity and behavioural consistency

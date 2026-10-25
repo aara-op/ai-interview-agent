@@ -1,0 +1,70 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 2842 >>
+stream
+BT
+/F2 20 Tf 1 0 0 1 56 786.0 Tm (Ananya Sharma) Tj
+/F1 9.5 Tf 1 0 0 1 56 760.0 Tm (ananya.sharma@example.com ∑ +91 98765 43210 ∑ Bengaluru, India ∑ github.com/ananyasharma) Tj
+/F2 13 Tf 1 0 0 1 56 742.0 Tm (Summary) Tj
+/F1 10 Tf 1 0 0 1 56 718.0 Tm (Backend software engineer with 3 years of experience building Java and Spring Boot microserv) Tj
+/F1 10 Tf 1 0 0 1 56 702.0 Tm (ices for payments and e-commerce domains. Worked on REST APIs, Kafka-based event pipelines a) Tj
+/F1 10 Tf 1 0 0 1 56 686.0 Tm (nd PostgreSQL performance tuning.) Tj
+/F2 13 Tf 1 0 0 1 56 670.0 Tm (Skills) Tj
+/F1 10 Tf 1 0 0 1 56 646.0 Tm (Java 17, Spring Boot, Spring Security, Spring Data JPA, REST, microservices, PostgreSQL, MyS) Tj
+/F1 10 Tf 1 0 0 1 56 630.0 Tm (QL, Kafka, RabbitMQ, Redis, Docker, Git, JUnit, Mockito, Jenkins CI, AWS \(ECS, S3\)) Tj
+/F2 13 Tf 1 0 0 1 56 614.0 Tm (Experience) Tj
+/F2 11.5 Tf 1 0 0 1 56 590.0 Tm (Software Engineer II ? Payverse Technologies \(2023 ? Present\)) Tj
+/F1 10 Tf 1 0 0 1 56 571.0 Tm (- Built a refund processing service in Spring Boot handling 40k refunds/day, cutting settlem) Tj
+/F1 10 Tf 1 0 0 1 56 555.0 Tm (ent latency by 35%.) Tj
+/F1 10 Tf 1 0 0 1 56 539.0 Tm (- Designed idempotent payment webhook consumers on Kafka with retry and dead-letter handling) Tj
+/F1 10 Tf 1 0 0 1 56 523.0 Tm (.) Tj
+/F1 10 Tf 1 0 0 1 56 507.0 Tm (- Migrated 12 REST endpoints to a versioned API contract and added Mockito integration tests) Tj
+/F1 10 Tf 1 0 0 1 56 491.0 Tm ( raising coverage from 54% to 82%.) Tj
+/F2 11.5 Tf 1 0 0 1 56 475.0 Tm (Software Engineer ? Shopkart Solutions \(2021 ? 2023\)) Tj
+/F1 10 Tf 1 0 0 1 56 456.0 Tm (- Developed order and inventory microservices in Java/Spring Boot behind an API gateway.) Tj
+/F1 10 Tf 1 0 0 1 56 440.0 Tm (- Optimised slow PostgreSQL queries \(missing indexes, N+1 ORM fetches\) and reduced p95 API l) Tj
+/F1 10 Tf 1 0 0 1 56 424.0 Tm (atency from 900 ms to 320 ms.) Tj
+/F1 10 Tf 1 0 0 1 56 408.0 Tm (- Containerised services with Docker and maintained the Jenkins pipeline.) Tj
+/F2 13 Tf 1 0 0 1 56 392.0 Tm (Projects) Tj
+/F1 10 Tf 1 0 0 1 56 368.0 Tm (RideShare Analytics ? Spring Boot + Kafka + Redis service that aggregates ride events in nea) Tj
+/F1 10 Tf 1 0 0 1 56 352.0 Tm (r real time; deployed on AWS ECS.) Tj
+/F1 10 Tf 1 0 0 1 56 336.0 Tm (FileVault ? Spring Security based document vault with JWT refresh tokens and per-object acce) Tj
+/F1 10 Tf 1 0 0 1 56 320.0 Tm (ss policies.) Tj
+/F2 13 Tf 1 0 0 1 56 304.0 Tm (Education) Tj
+/F1 10 Tf 1 0 0 1 56 280.0 Tm (B.E. Computer Science, RV College of Engineering, 2021 ? CGPA 8.4/10) Tj
+/F2 13 Tf 1 0 0 1 56 264.0 Tm (Certifications) Tj
+/F1 10 Tf 1 0 0 1 56 240.0 Tm (AWS Certified Cloud Practitioner \(2023\) ∑ Oracle Certified Professional: Java SE 11 Develope) Tj
+/F1 10 Tf 1 0 0 1 56 224.0 Tm (r \(2022\)) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000257 00000 n 
+0000003151 00000 n 
+0000003221 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+3296
+%%EOF
