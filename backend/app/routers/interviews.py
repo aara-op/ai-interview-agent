@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import json
+import re
 import secrets
 from datetime import datetime
+from pathlib import Path
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
@@ -80,8 +82,12 @@ async def create_interview(
         data = await _read_upload(resume)
         text = rparse.extract_text(resume.filename, data)
         if not text.strip():
-            raise HTTPException(422,
-                                "Could not extract text from that resume file.")
+            clean_stem = re.sub(r"[_\-\.]+", " ", Path(resume.filename).stem).title()
+            text = (
+                f"Candidate: {clean_stem}\n"
+                f"Attachment: {resume.filename}\n"
+                f"Notice: Scanned or graphic document layout uploaded."
+            )
         parsed = rparse.extract_resume(text)
         resume_obj = Resume(
             filename=resume.filename,

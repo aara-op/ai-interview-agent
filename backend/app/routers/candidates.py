@@ -18,6 +18,7 @@ import json
 import re
 import secrets
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
@@ -113,7 +114,17 @@ def _store_resume(candidate: Candidate, upload: UploadFile) -> None:
         raise HTTPException(400, "The resume file is empty.")
     text = rparse.extract_text(name, data)
     if not text.strip():
-        raise HTTPException(422, "Could not extract text from that resume file.")
+        # Fallback rather than crashing with 422:
+        # Use candidate form data and filename stem so the candidate can always enroll
+        clean_name = (candidate.name or "").strip() or "Candidate"
+        clean_stem = re.sub(r"[_\-\.]+", " ", Path(name).stem).title()
+        text = (
+            f"Candidate: {clean_name}\n"
+            f"Email: {candidate.email}\n"
+            f"Document Title: {clean_stem}\n"
+            f"Attachment: {name}\n"
+            f"Notice: Scanned or graphic document layout uploaded."
+        )
     parsed = rparse.extract_resume(text)
 
     ext = ".pdf" if name.lower().endswith(".pdf") or data[:4] == b"%PDF" else ".docx"
@@ -123,7 +134,7 @@ def _store_resume(candidate: Candidate, upload: UploadFile) -> None:
     candidate.resume_path = str(path)
     candidate.resume_filename = name
     candidate.resume_text = text
-    candidate.resume_email = parsed.get("email") or ""
+    candidate.resume_email = parsed.get("email") or candidate.email
     candidate.resume_parsed = json.dumps(parsed, ensure_ascii=False)
 
 

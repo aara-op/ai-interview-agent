@@ -35,34 +35,255 @@ SKILL_VOCAB = [
 # File -> plain text
 # --------------------------------------------------------------------------- #
 def extract_text(filename: str, data: bytes) -> str:
+    if not data:
+        return ""
     name = (filename or "").lower()
-    if name.endswith(".pdf") or data[:5] == b"%PDF-":
-        return _pdf_text(data)
-    if name.endswith(".docx") or data[:2] == b"PK":
-        return _docx_text(data)
-    # last resort: try utf-8 plain text
-    return data.decode("utf-8", errors="ignore")
+
+    # 1. PDF detection (by extension or %PDF magic marker anywhere in first 1024 bytes)
+    if name.endswith(".pdf") or b"%PDF" in data[:1024]:
+        txt = _pdf_text(data)
+        if txt.strip():
+            return txt
+
+    # 2. DOCX detection (by extension or ZIP magic marker PK)
+    if name.endswith(".docx") or (data[:2] == b"PK" and b"word/" in data[:4096]):
+        txt = _docx_text(data)
+        if txt.strip():
+            return txt
+
+    # 3. Binary Word DOC (Word 97-2003 OLE format)
+    if name.endswith(".doc") or data[:8] == b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1":
+        txt = _doc_binary_text(data)
+        if txt.strip():
+            return txt
+
+    # 4. Rich Text Format (RTF)
+    if name.endswith(".rtf") or data[:5] == b"{\\rtf":
+        txt = _rtf_text(data)
+        if txt.strip():
+            return txt
+
+    # 5. Plain text with common encodings
+    for encoding in ("utf-8", "utf-16", "utf-16-le", "latin-1", "cp1252"):
+        try:
+            decoded = data.decode(encoding)
+            letters = sum(1 for c in decoded if c.isalpha())
+            if letters > 20:
+                return decoded.strip()
+        except Exception:
+            continue
+
+    # 6. Raw printable character extraction fallback
+    try:
+        strings = re.findall(rb"[\x20-\x7e\r\n\t]{4,}", data)
+        extracted = "\n".join(s.decode("latin-1", errors="ignore") for s in strings)
+        if len(extracted.strip()) > 25:
+            return extracted.strip()
+    except Exception:
+        pass
+
+    return ""
 
 
 def _pdf_text(data: bytes) -> str:
-    from pypdf import PdfReader
+    parts: list[str] = []
 
-    reader = PdfReader(io.BytesIO(data))
-    pages = [(page.extract_text() or "") for page in reader.pages]
-    return "\n".join(pages).strip()
+    # Strategy 1: PyMuPDF (fitz) - industry gold standard for complex layouts, CMap, and fonts
+    try:
+        import pymupdf
+        with pymupdf.open(stream=data, filetype="pdf") as doc:
+            if doc.is_encrypted:
+                try:
+                    doc.authenticate("")
+                except Exception:
+                    pass
+            for page in doc:
+                t = page.get_text("text") or ""
+                if not t.strip():
+                    # Try blocks mode
+                    blocks = page.get_text("blocks") or []
+                    t = "\n".join(b[4] for b in blocks if len(b) > 4 and isinstance(b[4], str))
+                if not t.strip():
+                    # Try words mode
+                    words = page.get_text("words") or []
+                    t = " ".join(w[4] for w in words if len(w) > 4 and isinstance(w[4], str))
+                if t.strip():
+                    parts.append(t.strip())
+
+            # Check for form fields/widgets
+            if not "".join(parts).strip():
+                for page in doc:
+                    for widget in page.widgets():
+                        if widget.field_value:
+                            parts.append(str(widget.field_value))
+
+            # Metadata fallback
+            if not "".join(parts).strip() and doc.metadata:
+                meta = [f"{k}: {v}" for k, v in doc.metadata.items() if v]
+                if meta:
+                    parts.append("\n".join(meta))
+    except Exception:
+        pass
+
+    res = "\n\n".join(parts).strip()
+    if res:
+        return res
+
+    # Strategy 2: pypdf fallback (layout and standard extraction)
+    try:
+        from pypdf import PdfReader
+        reader = PdfReader(io.BytesIO(data))
+        if reader.is_encrypted:
+            try:
+                reader.decrypt("")
+            except Exception:
+                pass
+        for page in reader.pages:
+            try:
+                t = page.extract_text(extraction_mode="layout") or page.extract_text() or ""
+                if t.strip():
+                    parts.append(t.strip())
+            except Exception:
+                try:
+                    t = page.extract_text() or ""
+                    if t.strip():
+                        parts.append(t.strip())
+                except Exception:
+                    pass
+
+        # Check fields
+        try:
+            fields = reader.get_fields() or {}
+            for field_name, field in fields.items():
+                val = field.get("/V")
+                if val:
+                    parts.append(f"{field_name}: {val}")
+        except Exception:
+            pass
+    except Exception:
+        pass
+
+    res = "\n\n".join(parts).strip()
+    if res:
+        return res
+
+    # Strategy 3: Raw PDF stream decompression for uncompressed/FlateDecode text streams
+    try:
+        import zlib
+        for stream_match in re.finditer(rb"stream[\r\n]+(.*?)[\r\n]+endstream", data, re.DOTALL):
+            stream_data = stream_match.group(1)
+            decompressed = None
+            for wbits in (0, 15, -15, 32):
+                try:
+                    decompressed = zlib.decompress(stream_data, wbits)
+                    break
+                except Exception:
+                    continue
+            if decompressed is None:
+                decompressed = stream_data
+
+            matches = re.findall(rb"\((.*?)\)", decompressed)
+            for m in matches:
+                try:
+                    s = m.decode("utf-8", errors="ignore").strip()
+                    if len(s) > 2 and any(c.isalnum() for c in s):
+                        parts.append(s)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    return "\n".join(parts).strip()
 
 
 def _docx_text(data: bytes) -> str:
-    from docx import Document
+    parts: list[str] = []
 
-    doc = Document(io.BytesIO(data))
-    parts = [p.text for p in doc.paragraphs if p.text.strip()]
-    for table in doc.tables:
-        for row in table.rows:
-            cells = [c.text.strip() for c in row.cells if c.text.strip()]
-            if cells:
-                parts.append(" | ".join(cells))
+    # 1. Standard python-docx paragraphs, tables, and headers/footers
+    try:
+        from docx import Document
+        doc = Document(io.BytesIO(data))
+        for p in doc.paragraphs:
+            if p.text.strip():
+                parts.append(p.text.strip())
+        for table in doc.tables:
+            for row in table.rows:
+                cells = [c.text.strip() for c in row.cells if c.text.strip()]
+                if cells:
+                    parts.append(" | ".join(cells))
+        for section in doc.sections:
+            try:
+                for hp in section.header.paragraphs:
+                    if hp.text.strip():
+                        parts.append(hp.text.strip())
+                for fp in section.footer.paragraphs:
+                    if fp.text.strip():
+                        parts.append(fp.text.strip())
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # 2. Deep XML extraction: catches text boxes (<w:txbxContent>), shapes, and sidebars
+    try:
+        import zipfile
+        import xml.etree.ElementTree as ET
+        with zipfile.ZipFile(io.BytesIO(data)) as z:
+            xml_parts = []
+            for item in z.namelist():
+                if item.startswith("word/") and item.endswith(".xml"):
+                    try:
+                        content = z.read(item)
+                        tree = ET.fromstring(content)
+                        for node in tree.iter():
+                            if node.tag.endswith("}t") and node.text and node.text.strip():
+                                xml_parts.append(node.text.strip())
+                    except Exception:
+                        continue
+            xml_text = " ".join(xml_parts).strip()
+            # If standard docx parser extracted less text than XML (common with textboxes)
+            if len(xml_text) > len("\n".join(parts)):
+                return xml_text
+    except Exception:
+        pass
+
     return "\n".join(parts).strip()
+
+
+def _doc_binary_text(data: bytes) -> str:
+    """Extract readable text chunks from legacy Word 97-2003 (.doc) binary streams."""
+    try:
+        utf16_matches = re.findall(rb"(?:[\x20-\x7e]\x00){4,}", data)
+        ascii_matches = re.findall(rb"[\x20-\x7e\r\n\t]{4,}", data)
+        extracted: list[str] = []
+        for m in utf16_matches:
+            try:
+                s = m.decode("utf-16le", errors="ignore").strip()
+                if len(s) > 3:
+                    extracted.append(s)
+            except Exception:
+                pass
+        for m in ascii_matches:
+            try:
+                s = m.decode("latin-1", errors="ignore").strip()
+                if len(s) > 3 and any(c.isalnum() for c in s):
+                    extracted.append(s)
+            except Exception:
+                pass
+        return "\n".join(extracted).strip()
+    except Exception:
+        return ""
+
+
+def _rtf_text(data: bytes) -> str:
+    """Extract readable text from RTF documents."""
+    try:
+        text = data.decode("latin-1", errors="ignore")
+        text = re.sub(r"\\[a-z0-9]+-?[0-9]*\s?", " ", text)
+        text = re.sub(r"[{}]", "", text)
+        return " ".join(text.split()).strip()
+    except Exception:
+        return ""
 
 
 # --------------------------------------------------------------------------- #
