@@ -1,9 +1,9 @@
 # AI-Powered Video Interview Agent
 
-> **🌐 Live Deployment Link (Cloudflare Edge HTTPS):** [https://sound-dvds-comparing-missouri.trycloudflare.com](https://sound-dvds-comparing-missouri.trycloudflare.com)  
-> **🌊 3D Instanced Wave Showcase:** [https://sound-dvds-comparing-missouri.trycloudflare.com/demo](https://sound-dvds-comparing-missouri.trycloudflare.com/demo)  
-> **📊 Recruiter Dashboard:** [https://sound-dvds-comparing-missouri.trycloudflare.com/dashboard](https://sound-dvds-comparing-missouri.trycloudflare.com/dashboard)  
-> **👤 Candidate Portal:** [https://sound-dvds-comparing-missouri.trycloudflare.com/candidate](https://sound-dvds-comparing-missouri.trycloudflare.com/candidate)
+> **🌐 Live Deployment Link (Cloudflare Edge HTTPS):** [https://pending-friendly-enclosed-directed.trycloudflare.com](https://pending-friendly-enclosed-directed.trycloudflare.com)  
+> **🌊 3D Instanced Wave Showcase:** [https://pending-friendly-enclosed-directed.trycloudflare.com/demo](https://pending-friendly-enclosed-directed.trycloudflare.com/demo)  
+> **📊 Recruiter Dashboard:** [https://pending-friendly-enclosed-directed.trycloudflare.com/dashboard](https://pending-friendly-enclosed-directed.trycloudflare.com/dashboard)  
+> **👤 Candidate Portal:** [https://pending-friendly-enclosed-directed.trycloudflare.com/candidate](https://pending-friendly-enclosed-directed.trycloudflare.com/candidate)
 
 An end-to-end prototype of an autonomous AI interviewer: a recruiter configures a
 role, uploads a resume and a job description, the agent writes the question set,
