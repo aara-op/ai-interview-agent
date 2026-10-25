@@ -155,6 +155,9 @@ export class FaceAnalyzer {
           baseOptions: { modelAssetPath: model, delegate: "GPU" },
           runningMode: "VIDEO",
           numFaces: 2,
+          minFaceDetectionConfidence: 0.3,
+          minFacePresenceConfidence: 0.3,
+          minTrackingConfidence: 0.3,
           outputFaceBlendshapes: true,
           outputFacialTransformationMatrixes: false,
         });
@@ -165,6 +168,9 @@ export class FaceAnalyzer {
             baseOptions: { modelAssetPath: model, delegate: "CPU" },
             runningMode: "VIDEO",
             numFaces: 2,
+            minFaceDetectionConfidence: 0.3,
+            minFacePresenceConfidence: 0.3,
+            minTrackingConfidence: 0.3,
             outputFaceBlendshapes: true,
             outputFacialTransformationMatrixes: false,
           });

@@ -3,8 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../api";
 import {
   compareFaces,
+  detectFaceQuick,
   embedImageUrl,
   embedVideoFrame,
+  embedVideoFrameWithRetries,
   type IdentityResult,
 } from "../face/match";
 import { AudioMonitor } from "../proctoring/audio";
@@ -19,6 +21,8 @@ export default function Onboarding() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const monitorRef = useRef<AudioMonitor | null>(null);
+  const faceTimerRef = useRef<number | null>(null);
+  const [faceDetected, setFaceDetected] = useState<boolean | null>(null);
 
   const [session, setSession] = useState<Session | null>(null);
   const [loadError, setLoadError] = useState("");
@@ -101,6 +105,14 @@ export default function Onboarding() {
         monitorRef.current = monitor;
         monitor.onSample = (s) => setMicLevel(s.rms);
         await monitor.start(stream);
+
+        // Real-time face detection tracker
+        faceTimerRef.current = window.setInterval(async () => {
+          if (videoRef.current && videoRef.current.readyState >= 2) {
+            const { detected } = await detectFaceQuick(videoRef.current);
+            setFaceDetected(detected);
+          }
+        }, 500);
       } catch (err) {
         setCamState("fail");
         setMicState("fail");
@@ -113,6 +125,11 @@ export default function Onboarding() {
     probe();
     return () => {
       cancelled = true;
+      if (faceTimerRef.current !== null) {
+        window.clearInterval(faceTimerRef.current);
+        faceTimerRef.current = null;
+      }
+      setFaceDetected(null);
       monitorRef.current?.stop();
       streamRef.current?.getTracks().forEach((t) => t.stop());
     };
@@ -148,7 +165,11 @@ export default function Onboarding() {
       const reference =
         refEmbedding ?? (await embedImageUrl(session?.candidate?.pfp_url ?? ""));
       if (reference && !refEmbedding) setRefEmbedding(reference);
-      const live = await embedVideoFrame(videoRef.current);
+      const { embedding: live } = await embedVideoFrameWithRetries(
+        videoRef.current,
+        6,
+        90,
+      );
       const result = compareFaces(reference, live);
       setIdentity(result);
       setIdentityOk(result.match);
@@ -332,11 +353,46 @@ export default function Onboarding() {
           </div>
 
           <div className="video-grid dual">
-            <div className="vtile">
+            <div className="vtile" style={{ position: "relative" }}>
               <video ref={videoRef} className="mirrored" autoPlay playsInline muted />
               {camState !== "ok" && (
                 <div className="placeholder">
                   <div>{camState === "fail" ? "Camera unavailable" : "Requesting camera…"}</div>
+                </div>
+              )}
+              {camState === "ok" && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 10,
+                    right: 10,
+                    zIndex: 5,
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    fontSize: "0.78rem",
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    background:
+                      faceDetected === true
+                        ? "rgba(16, 185, 129, 0.9)"
+                        : faceDetected === false
+                          ? "rgba(245, 158, 11, 0.9)"
+                          : "rgba(0, 0, 0, 0.6)",
+                    color: "#fff",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                    backdropFilter: "blur(4px)",
+                  }}
+                >
+                  <span style={{ fontSize: "0.7rem" }}>
+                    {faceDetected === true ? "●" : faceDetected === false ? "▲" : "○"}
+                  </span>
+                  {faceDetected === true
+                    ? "Face detected"
+                    : faceDetected === false
+                      ? "Center your face"
+                      : "Scanning face…"}
                 </div>
               )}
               <div className="vlabel">

@@ -4,8 +4,10 @@ import { api } from "../api";
 import { type Candidate, type CandidateInterview, type Session } from "../types";
 import {
   compareFaces,
+  detectFaceQuick,
   embedImageUrl,
   embedVideoFrame,
+  embedVideoFrameWithRetries,
   identityStatus,
   type IdentityResult,
 } from "../face/match";
@@ -113,6 +115,8 @@ export default function CandidateHome() {
   const streamRef = useRef<MediaStream | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<number | null>(null);
+  const faceTimerRef = useRef<number | null>(null);
+  const [faceDetected, setFaceDetected] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(false);
   const [camState, setCamState] = useState<DevState>("idle");
   const [micState, setMicState] = useState<DevState>("idle");
@@ -240,6 +244,11 @@ export default function CandidateHome() {
       window.clearInterval(timerRef.current);
       timerRef.current = null;
     }
+    if (faceTimerRef.current !== null) {
+      window.clearInterval(faceTimerRef.current);
+      faceTimerRef.current = null;
+    }
+    setFaceDetected(null);
     try {
       ctxRef.current?.close();
     } catch {
@@ -273,6 +282,7 @@ export default function CandidateHome() {
     setMicState("checking");
     setVerified(false);
     setIdentity(null);
+    setFaceDetected(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -309,6 +319,14 @@ export default function CandidateHome() {
         for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
         setLevelPct(Math.min(100, Math.round(Math.sqrt(sum / buf.length) * 400)));
       }, 120);
+
+      // Real-time face detection tracker for preview tile
+      faceTimerRef.current = window.setInterval(async () => {
+        if (videoRef.current && videoRef.current.readyState >= 2) {
+          const { detected } = await detectFaceQuick(videoRef.current);
+          setFaceDetected(detected);
+        }
+      }, 500);
     } catch (e) {
       setCamState("fail");
       setMicState("fail");
@@ -330,7 +348,11 @@ export default function CandidateHome() {
       const reference =
         refEmbedding ?? (await embedImageUrl(candidate?.pfp_url ?? ""));
       if (reference && !refEmbedding) setRefEmbedding(reference);
-      const live = await embedVideoFrame(videoRef.current);
+      const { embedding: live } = await embedVideoFrameWithRetries(
+        videoRef.current,
+        6,
+        90,
+      );
       const result = compareFaces(reference, live);
       setIdentity(result);
       setVerified(result.match);
@@ -427,9 +449,26 @@ export default function CandidateHome() {
       return;
     }
     const reader = new FileReader();
-    reader.onload = () => {
-      setPfpDataUrl(String(reader.result));
+    reader.onload = async () => {
+      const dataUrl = String(reader.result);
+      setPfpDataUrl(dataUrl);
       setPfpError("");
+      try {
+        const img = new Image();
+        img.src = dataUrl;
+        await new Promise((r) => {
+          img.onload = () => r(true);
+          img.onerror = () => r(false);
+        });
+        const { detected } = await detectFaceQuick(img);
+        if (!detected) {
+          setPfpError(
+            "Note: Face detection was faint in this photo. For reliable verification, ensure good lighting and a front-facing angle.",
+          );
+        }
+      } catch {
+        /* non-fatal pre-check */
+      }
     };
     reader.onerror = () => setPfpError("Could not read that file.");
     reader.readAsDataURL(file);
@@ -991,7 +1030,7 @@ export default function CandidateHome() {
           </div>
 
           <div className="video-grid dual">
-            <div className="vtile">
+            <div className="vtile" style={{ position: "relative" }}>
               <video ref={videoRef} className="mirrored" autoPlay playsInline muted />
               {camState !== "ok" && (
                 <div className="placeholder">
@@ -1002,6 +1041,41 @@ export default function CandidateHome() {
                         ? "Requesting permission…"
                         : "Camera off"}
                   </div>
+                </div>
+              )}
+              {camState === "ok" && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 10,
+                    right: 10,
+                    zIndex: 5,
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    fontSize: "0.78rem",
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    background:
+                      faceDetected === true
+                        ? "rgba(16, 185, 129, 0.9)"
+                        : faceDetected === false
+                          ? "rgba(245, 158, 11, 0.9)"
+                          : "rgba(0, 0, 0, 0.6)",
+                    color: "#fff",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                    backdropFilter: "blur(4px)",
+                  }}
+                >
+                  <span style={{ fontSize: "0.7rem" }}>
+                    {faceDetected === true ? "●" : faceDetected === false ? "▲" : "○"}
+                  </span>
+                  {faceDetected === true
+                    ? "Face detected"
+                    : faceDetected === false
+                      ? "Center your face"
+                      : "Scanning face…"}
                 </div>
               )}
               <div className="vlabel">
