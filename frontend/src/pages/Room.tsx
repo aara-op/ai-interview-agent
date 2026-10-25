@@ -424,10 +424,19 @@ export default function Room() {
         }
         if (seededWarnings.length) setWarnings(seededWarnings);
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: { echoCancellation: true, noiseSuppression: true },
-        });
+        let stream: MediaStream;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: { echoCancellation: true, noiseSuppression: true },
+          });
+        } catch {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+          } catch {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          }
+        }
         if (cancelled) {
           stream.getTracks().forEach((t) => t.stop());
           return;
@@ -509,6 +518,16 @@ export default function Room() {
     }
     prevSecondaryRef.current = secondaryOn;
   }, [secondaryOn]);
+
+  // Keep primary video connected to stream across tab focus changes and re-renders
+  useEffect(() => {
+    const v = videoRef.current;
+    const s = streamRef.current;
+    if (v && s && v.srcObject !== s) {
+      v.srcObject = s;
+      v.play().catch(() => undefined);
+    }
+  });
 
   // periodic HUD refresh
   useEffect(() => {
@@ -1323,7 +1342,19 @@ export default function Room() {
         <div className="stage">
           <div className={"video-grid" + (secondaryOn ? " dual" : "")}>
             <div className="vtile">
-              <video ref={videoRef} className="mirrored" autoPlay playsInline muted />
+              <video
+                ref={(el) => {
+                  (videoRef as React.MutableRefObject<HTMLVideoElement | null>).current = el;
+                  if (el && streamRef.current && el.srcObject !== streamRef.current) {
+                    el.srcObject = streamRef.current;
+                    el.play().catch(() => undefined);
+                  }
+                }}
+                className="mirrored"
+                autoPlay
+                playsInline
+                muted
+              />
               <div className="vlabel">
                 <span className="dot" style={{ color: "var(--ok)" }} />
                 Primary camera
@@ -1338,7 +1369,18 @@ export default function Room() {
 
             {secondaryOn && (
               <div className="vtile">
-                <video ref={remoteRef} autoPlay playsInline />
+                <video
+                  ref={(el) => {
+                    (remoteRef as React.MutableRefObject<HTMLVideoElement | null>).current = el;
+                    if (el && remoteStreamRef.current && el.srcObject !== remoteStreamRef.current) {
+                      el.srcObject = remoteStreamRef.current;
+                      el.play().catch(() => undefined);
+                    }
+                  }}
+                  autoPlay
+                  playsInline
+                  muted
+                />
                 <div className="vlabel">
                   <span className="dot" style={{ color: "var(--info)" }} />
                   Secondary camera

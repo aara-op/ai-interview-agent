@@ -77,10 +77,19 @@ export default function Onboarding() {
         return;
       }
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: { echoCancellation: true, noiseSuppression: true },
-        });
+        let stream: MediaStream;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: { echoCancellation: true, noiseSuppression: true },
+          });
+        } catch {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+          } catch {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          }
+        }
         if (cancelled) {
           stream.getTracks().forEach((t) => t.stop());
           return;
@@ -134,6 +143,16 @@ export default function Onboarding() {
       streamRef.current?.getTracks().forEach((t) => t.stop());
     };
   }, []);
+
+  // Guarantee that the <video> element receives the stream as soon as it mounts or auth changes
+  useEffect(() => {
+    const video = videoRef.current;
+    const stream = streamRef.current;
+    if (video && stream && video.srcObject !== stream) {
+      video.srcObject = stream;
+      video.play().catch(() => undefined);
+    }
+  });
 
   const levelPct = Math.min(100, Math.round(micLevel * 900));
 
@@ -354,7 +373,19 @@ export default function Onboarding() {
 
           <div className="video-grid dual">
             <div className="vtile" style={{ position: "relative" }}>
-              <video ref={videoRef} className="mirrored" autoPlay playsInline muted />
+              <video
+                ref={(el) => {
+                  (videoRef as React.MutableRefObject<HTMLVideoElement | null>).current = el;
+                  if (el && streamRef.current && el.srcObject !== streamRef.current) {
+                    el.srcObject = streamRef.current;
+                    el.play().catch(() => undefined);
+                  }
+                }}
+                className="mirrored"
+                autoPlay
+                playsInline
+                muted
+              />
               {camState !== "ok" && (
                 <div className="placeholder">
                   <div>{camState === "fail" ? "Camera unavailable" : "Requesting camera…"}</div>

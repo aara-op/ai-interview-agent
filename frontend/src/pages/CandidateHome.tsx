@@ -275,6 +275,24 @@ export default function CandidateHome() {
     [],
   );
 
+  // Ensure the video element is always displaying the active stream
+  useEffect(() => {
+    const video = videoRef.current;
+    const stream = streamRef.current;
+    if (video && stream && video.srcObject !== stream) {
+      video.srcObject = stream;
+      video.play().catch(() => undefined);
+    }
+  });
+
+  // Proactively start camera check once signed in so Section 2 is never a dark blank box
+  useEffect(() => {
+    if (candidate && camState === "idle" && !checking) {
+      void startCheck();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [candidate]);
+
   async function startCheck() {
     setChecking(true);
     setDeviceError("");
@@ -284,10 +302,19 @@ export default function CandidateHome() {
     setIdentity(null);
     setFaceDetected(null);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: { echoCancellation: true, noiseSuppression: true },
-      });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: { echoCancellation: true, noiseSuppression: true },
+        });
+      } catch {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        } catch {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        }
+      }
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -1030,17 +1057,39 @@ export default function CandidateHome() {
           </div>
 
           <div className="video-grid dual">
-            <div className="vtile" style={{ position: "relative" }}>
-              <video ref={videoRef} className="mirrored" autoPlay playsInline muted />
+            <div
+              className="vtile"
+              style={{ position: "relative", cursor: !checking ? "pointer" : "default" }}
+              onClick={!checking ? startCheck : undefined}
+            >
+              <video
+                ref={(el) => {
+                  (videoRef as React.MutableRefObject<HTMLVideoElement | null>).current = el;
+                  if (el && streamRef.current && el.srcObject !== streamRef.current) {
+                    el.srcObject = streamRef.current;
+                    el.play().catch(() => undefined);
+                  }
+                }}
+                className="mirrored"
+                autoPlay
+                playsInline
+                muted
+              />
               {camState !== "ok" && (
                 <div className="placeholder">
-                  <div>
+                  <div style={{ fontSize: "1.7rem", marginBottom: 2 }}>📷</div>
+                  <div style={{ fontWeight: 600 }}>
                     {camState === "fail"
-                      ? "Camera unavailable"
+                      ? "Camera unavailable (click to retry)"
                       : camState === "checking"
-                        ? "Requesting permission…"
-                        : "Camera off"}
+                        ? "Requesting camera permission…"
+                        : "Camera off — click here to turn on"}
                   </div>
+                  {camState === "idle" && (
+                    <div className="tiny dim">
+                      Tap or click to start device & identity check
+                    </div>
+                  )}
                 </div>
               )}
               {camState === "ok" && (

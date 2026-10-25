@@ -103,11 +103,18 @@ export default function Secondary() {
           audio: false,
         });
       } catch {
-        setState("error");
-        setMessage(
-          "Camera permission was denied. Open the site settings, allow the camera, then reload.",
-        );
-        return;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
+        } catch {
+          setState("error");
+          setMessage(
+            "Camera permission was denied. Open the site settings, allow the camera, then reload.",
+          );
+          return;
+        }
       }
       if (cancelled) {
         stream.getTracks().forEach((t) => t.stop());
@@ -182,6 +189,16 @@ export default function Secondary() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
+  // Guarantee video element stays linked to camera stream
+  useEffect(() => {
+    const video = videoRef.current;
+    const stream = streamRef.current;
+    if (video && stream && video.srcObject !== stream) {
+      video.srcObject = stream;
+      video.play().catch(() => undefined);
+    }
+  });
+
   return (
     <div className="secondary-shell">
       <div className="card">
@@ -214,13 +231,37 @@ export default function Secondary() {
         </div>
       </div>
 
-      <div className="vtile" style={{ aspectRatio: "3 / 4" }}>
-        <video ref={videoRef} autoPlay playsInline muted />
+      <div className="vtile" style={{ aspectRatio: "3 / 4", position: "relative" }}>
+        <video
+          ref={(el) => {
+            (videoRef as React.MutableRefObject<HTMLVideoElement | null>).current = el;
+            if (el && streamRef.current && el.srcObject !== streamRef.current) {
+              el.srcObject = streamRef.current;
+              el.play().catch(() => undefined);
+            }
+          }}
+          autoPlay
+          playsInline
+          muted
+        />
         {state !== "live" && (
-          <div className="placeholder">
+          <div
+            className="placeholder"
+            style={{
+              background: state === "waiting" ? "rgba(5, 7, 15, 0.45)" : undefined,
+              backdropFilter: state === "waiting" ? "blur(2px)" : undefined,
+            }}
+          >
             {state === "starting" && <div>Connecting…</div>}
             {state === "needs-permission" && <div>Allow camera access when prompted…</div>}
-            {state === "waiting" && <div>Waiting for the interview room to pick up the feed…</div>}
+            {state === "waiting" && (
+              <div style={{ textAlign: "center", padding: "10px 16px", borderRadius: 8, background: "rgba(0,0,0,0.65)" }}>
+                <div style={{ fontWeight: 600, color: "#fff" }}>Camera connected locally ✓</div>
+                <div className="tiny" style={{ color: "rgba(255,255,255,0.7)", marginTop: 4 }}>
+                  Waiting for interview room to link feed…
+                </div>
+              </div>
+            )}
             {state === "error" && <div>{message}</div>}
           </div>
         )}
