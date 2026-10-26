@@ -1,9 +1,9 @@
 # AI-Powered Video Interview Agent
 
-> **🌐 Live Deployment Link (Cloudflare Edge HTTPS):** [https://antique-dial-renewal-tool.trycloudflare.com](https://antique-dial-renewal-tool.trycloudflare.com)  
-> **🌊 3D Instanced Wave Showcase:** [https://antique-dial-renewal-tool.trycloudflare.com/demo](https://antique-dial-renewal-tool.trycloudflare.com/demo)  
-> **📊 Recruiter Dashboard:** [https://antique-dial-renewal-tool.trycloudflare.com/dashboard](https://antique-dial-renewal-tool.trycloudflare.com/dashboard)  
-> **👤 Candidate Portal:** [https://antique-dial-renewal-tool.trycloudflare.com/candidate](https://antique-dial-renewal-tool.trycloudflare.com/candidate)
+> **🌐 Live Deployment Link (Cloudflare Edge HTTPS):** [https://total-cio-italia-generous.trycloudflare.com](https://total-cio-italia-generous.trycloudflare.com)  
+> **🌊 3D Instanced Wave Showcase:** [https://total-cio-italia-generous.trycloudflare.com/demo](https://total-cio-italia-generous.trycloudflare.com/demo)  
+> **📊 Recruiter Dashboard:** [https://total-cio-italia-generous.trycloudflare.com/dashboard](https://total-cio-italia-generous.trycloudflare.com/dashboard)  
+> **👤 Candidate Portal:** [https://total-cio-italia-generous.trycloudflare.com/candidate](https://total-cio-italia-generous.trycloudflare.com/candidate)
 
 An end-to-end prototype of an autonomous AI interviewer: a recruiter configures a
 role, uploads a resume and a job description, the agent writes the question set,
