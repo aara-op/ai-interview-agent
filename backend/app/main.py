@@ -55,8 +55,15 @@ def health() -> dict:
 from fastapi.responses import FileResponse
 
 # Serve the built SPA when frontend/dist exists (single-server demo mode).
-_DIST = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
-if _DIST.is_dir():
+_CANDIDATE_PATHS = [
+    Path(__file__).resolve().parent.parent.parent / "frontend" / "dist",
+    Path(__file__).resolve().parent.parent / "frontend" / "dist",
+    Path("/app/frontend/dist"),
+    Path("frontend/dist"),
+    Path("../frontend/dist"),
+]
+_DIST = next((p for p in _CANDIDATE_PATHS if p.is_dir()), None)
+if _DIST:
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
         file_path = _DIST / full_path
