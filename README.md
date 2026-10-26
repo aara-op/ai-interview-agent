@@ -1,9 +1,9 @@
 # AI-Powered Video Interview Agent
 
-> **🌐 Live Demo (Cloudflare Edge HTTPS):** [https://total-cio-italia-generous.trycloudflare.com](https://total-cio-italia-generous.trycloudflare.com)  
-> **🌊 3D Instanced Wave Showcase:** [https://total-cio-italia-generous.trycloudflare.com/demo](https://total-cio-italia-generous.trycloudflare.com/demo)  
-> **📊 Recruiter Dashboard:** [https://total-cio-italia-generous.trycloudflare.com/dashboard](https://total-cio-italia-generous.trycloudflare.com/dashboard)  
-> **👤 Candidate Portal:** [https://total-cio-italia-generous.trycloudflare.com/candidate](https://total-cio-italia-generous.trycloudflare.com/candidate)  
+> **🌐 Live Demo (Cloudflare Edge HTTPS):** [https://sets-request-july-binding.trycloudflare.com](https://sets-request-july-binding.trycloudflare.com)  
+> **🌊 3D Instanced Wave Showcase:** [https://sets-request-july-binding.trycloudflare.com/demo](https://sets-request-july-binding.trycloudflare.com/demo)  
+> **📊 Recruiter Dashboard:** [https://sets-request-july-binding.trycloudflare.com/dashboard](https://sets-request-july-binding.trycloudflare.com/dashboard)  
+> **👤 Candidate Portal:** [https://sets-request-july-binding.trycloudflare.com/candidate](https://sets-request-july-binding.trycloudflare.com/candidate)  
 > **🚀 1-Click Permanent Cloud Deployment (24/7 Online):**  
 > [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/aara-op/ai-interview-agent)  
 > [![Deploy on Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?type=git&repository=github.com/aara-op/ai-interview-agent&branch=main&name=ai-interview-agent)
