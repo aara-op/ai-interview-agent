@@ -1,9 +1,9 @@
 # AI-Powered Video Interview Agent
 
-> **🌐 Live Deployment Link (Cloudflare Edge HTTPS):** [https://pending-friendly-enclosed-directed.trycloudflare.com](https://pending-friendly-enclosed-directed.trycloudflare.com)  
-> **🌊 3D Instanced Wave Showcase:** [https://pending-friendly-enclosed-directed.trycloudflare.com/demo](https://pending-friendly-enclosed-directed.trycloudflare.com/demo)  
-> **📊 Recruiter Dashboard:** [https://pending-friendly-enclosed-directed.trycloudflare.com/dashboard](https://pending-friendly-enclosed-directed.trycloudflare.com/dashboard)  
-> **👤 Candidate Portal:** [https://pending-friendly-enclosed-directed.trycloudflare.com/candidate](https://pending-friendly-enclosed-directed.trycloudflare.com/candidate)
+> **🌐 Live Deployment Link (Cloudflare Edge HTTPS):** [https://antique-dial-renewal-tool.trycloudflare.com](https://antique-dial-renewal-tool.trycloudflare.com)  
+> **🌊 3D Instanced Wave Showcase:** [https://antique-dial-renewal-tool.trycloudflare.com/demo](https://antique-dial-renewal-tool.trycloudflare.com/demo)  
+> **📊 Recruiter Dashboard:** [https://antique-dial-renewal-tool.trycloudflare.com/dashboard](https://antique-dial-renewal-tool.trycloudflare.com/dashboard)  
+> **👤 Candidate Portal:** [https://antique-dial-renewal-tool.trycloudflare.com/candidate](https://antique-dial-renewal-tool.trycloudflare.com/candidate)
 
 An end-to-end prototype of an autonomous AI interviewer: a recruiter configures a
 role, uploads a resume and a job description, the agent writes the question set,
